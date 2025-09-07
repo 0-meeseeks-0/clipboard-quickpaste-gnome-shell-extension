@@ -1,4 +1,4 @@
-INSTALLPATH = ~/.local/share/gnome-shell/extensions/quick-paste@meeseeks.com/
+INSTALLPATH = ~/.local/share/gnome-shell/extensions/clipboard-quickpaste@meeseeks.com/
 MODULES = extension.js metadata.json schemas/
 
 compile-schema:

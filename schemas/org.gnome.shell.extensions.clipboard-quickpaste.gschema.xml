@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema id="org.gnome.shell.extensions.quick-paste" path="/org/gnome/shell/extensions/quick-paste/">
+  <schema id="org.gnome.shell.extensions.clipboard-quickpaste" path="/org/gnome/shell/extensions/clipboard-quickpaste/">
     <key name="ctrl-right-arrow" type="as">
       <default>['&lt;Primary&gt;Right']</default>
       <summary>Ctrl + Right Arrow keybinding</summary>
