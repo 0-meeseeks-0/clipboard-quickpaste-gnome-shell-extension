@@ -1,3 +1,13 @@
+/**
+ * Keyboard class
+ *
+ * This code is taken from an external repository:
+ *   https://github.com/Tudmotu/gnome-shell-extension-clipboard-indicator
+ *
+ * License: MIT
+ * The code is included here without modifications.
+ */
+
 import Clutter from 'gi://Clutter';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
