@@ -1,0 +1,9 @@
+{
+  "name": "quick-paste",
+  "description": "A small extension for quick paste",
+  "uuid": "quick-paste@meeseeks.com",
+  "shell-version": [
+    "45", "46", "47", "48"
+  ],
+  "settings-schema": "org.gnome.shell.extensions.quick-paste"
+}

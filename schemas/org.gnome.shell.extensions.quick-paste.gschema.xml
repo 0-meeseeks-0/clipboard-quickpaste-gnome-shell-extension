@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.quick-paste" path="/org/gnome/shell/extensions/quick-paste/">
+    <key name="ctrl-right-arrow" type="as">
+      <default>['&lt;Primary&gt;Right']</default>
+      <summary>Ctrl + Right Arrow keybinding</summary>
+      <description>Global keybinding for quick-paste extension</description>
+    </key>
+  </schema>
+</schemalist>
