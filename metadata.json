@@ -1,5 +1,5 @@
 {
-  "name": "Clipboard quick paste",
+  "name": "Clipboard quickpaste",
   "description": "A small extension for quick paste",
   "uuid": "clipboard-quickpaste@meeseeks.com",
   "shell-version": [
