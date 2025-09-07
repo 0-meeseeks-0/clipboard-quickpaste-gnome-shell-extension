@@ -6,6 +6,7 @@ import Clutter from 'gi://Clutter';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 import Pango from 'gi://Pango';
+import { Keyboard } from './keyboard.js';
 
 import { Extension, gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -39,7 +40,7 @@ const Indicator = GObject.registerClass(
                 if (!isNaN(value)) {
                     extension._MAX_ITEMS = value;
 
-                    if (extension._clipboardHistory.length > extension._MAX_ITEMS){
+                    if (extension._clipboardHistory.length > extension._MAX_ITEMS) {
                         extension._clipboardHistory.splice(extension._MAX_ITEMS);
                         extension._footer.text = `(${extension._currentIndex} - ${extension._MAX_ITEMS})`;
                     }
@@ -68,6 +69,8 @@ export default class IndicatorExampleExtension extends Extension {
         this._selectionOwnerChangedId = null;
         this._isMyCopy = false;
         this._MAX_ITEMS = 50;
+        this._clipboard = St.Clipboard.get_default();
+        this._contentPurpose = null;
         this._setupListener();
 
         this._settings = this.getSettings();
@@ -81,6 +84,8 @@ export default class IndicatorExampleExtension extends Extension {
         this._clipboardHistory = [];
         this._currentIndex = 0;
         this._createOverlay();
+
+        this.keyboard = new Keyboard();
     }
 
     disable() {
@@ -98,8 +103,8 @@ export default class IndicatorExampleExtension extends Extension {
         }
 
         this._settings = null;
-
         this._destroyOverlay();
+        this.keyboard.destroy();
     }
 
     _enableKeybinding() {
@@ -149,19 +154,16 @@ export default class IndicatorExampleExtension extends Extension {
 
         this._selection = selection;
 
-        this._selectionOwnerChangedId = selection.connect(
-            'owner-changed',
-            this._onSelectionChange.bind(this)
-        );
+        this._selectionOwnerChangedId = selection.connect('owner-changed', (selection, selectionType, selectionSource) => {
+            this._onSelectionChange(selection, selectionType, selectionSource);
+        });
     }
 
     _onSelectionChange(selection, selectionType, selectionSource) {
-        if (selectionType !== 1) // 1 = CLIPBOARD
+        if (selectionType !== Meta.SelectionType.SELECTION_CLIPBOARD)
             return;
 
-        let clipboard = St.Clipboard.get_default();
-
-        clipboard.get_text(St.ClipboardType.CLIPBOARD, (clipboard, text) => {
+        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, (clipboard, text) => {
             if (!text || this._isMyCopy) {
                 this._isMyCopy = false;
                 return;
@@ -253,23 +255,31 @@ export default class IndicatorExampleExtension extends Extension {
                     return;
 
                 this._isMyCopy = true;
-                let processCopyToClipboard = new Gio.Subprocess({
-                    argv: ['sh', '-c', `echo -n ${GLib.shell_quote(this._clipboardHistory[this._currentIndex])} | wl-copy`],
-                    flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
-                });
-                processCopyToClipboard.init(null);
-
-                let processPaste = new Gio.Subprocess({
-                    argv: ['ydotool', 'key', 'ctrl+v'],
-                    flags: Gio.SubprocessFlags.NONE,
-                });
-                processPaste.init(null);
+                this._clipboard.set_text(St.ClipboardType.CLIPBOARD, this._clipboardHistory[this._currentIndex]);
+                this._paste();
             }
 
             return Clutter.EVENT_STOP;
         });
 
         this._overlay.hide();
+    }
+
+    _paste() {
+        if (this.keyboard.purpose === Clutter.InputContentPurpose.TERMINAL) {
+            this.keyboard.press(Clutter.KEY_Control_L);
+            this.keyboard.press(Clutter.KEY_Shift_L);
+            this.keyboard.press(Clutter.KEY_Insert);
+            this.keyboard.release(Clutter.KEY_Insert);
+            this.keyboard.release(Clutter.KEY_Shift_L);
+            this.keyboard.release(Clutter.KEY_Control_L);
+        }
+        else {
+            this.keyboard.press(Clutter.KEY_Shift_L);
+            this.keyboard.press(Clutter.KEY_Insert);
+            this.keyboard.release(Clutter.KEY_Insert);
+            this.keyboard.release(Clutter.KEY_Shift_L);
+        }
     }
 
     _destroyOverlay() {
