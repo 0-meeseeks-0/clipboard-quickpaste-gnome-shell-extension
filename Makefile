@@ -1,5 +1,5 @@
 INSTALLPATH = ~/.local/share/gnome-shell/extensions/clipboard-quickpaste@meeseeks.com/
-MODULES = extension.js metadata.json schemas/
+MODULES = extension.js metadata.json keyboard.js schemas/
 
 compile-schema:
 	glib-compile-schemas --strict --targetdir=schemas/ schemas
