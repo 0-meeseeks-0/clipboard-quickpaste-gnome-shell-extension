@@ -73,15 +73,15 @@ export default class IndicatorExampleExtension extends Extension {
         this._contentPurpose = null;
         this._setupListener();
 
-        this._settings = this.getSettings();
+        this._settings = this.getSettings('org.gnome.shell.extensions.clipboard-quickpaste');
 
         this._indicator = new Indicator(this);
         Main.panel.addToStatusArea(this.uuid, this._indicator);
 
         this._keybindingName = 'ctrl-right-arrow';
         this._enableKeybinding();
-
-        this._clipboardHistory = [];
+        
+        this._clipboardHistory = this._settings.get_strv('clipboard-quickpaste-history');
         this._currentIndex = 0;
         this._createOverlay();
 
@@ -105,6 +105,8 @@ export default class IndicatorExampleExtension extends Extension {
         this._settings = null;
         this._destroyOverlay();
         this.keyboard.destroy();
+        this._clipboardHistory = [];
+        this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
     }
 
     _enableKeybinding() {
@@ -182,6 +184,9 @@ export default class IndicatorExampleExtension extends Extension {
             this._currentIndex = 0;
             this._label.text = this._clipboardHistory[this._currentIndex];
             this._footer.text = `(${this._currentIndex + 1} - 50)`;
+
+            this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
+            this._clipboardHistory = this._settings.get_strv('clipboard-quickpaste-history');
         });
     }
 
