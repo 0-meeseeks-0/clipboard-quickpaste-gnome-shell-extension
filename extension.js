@@ -102,11 +102,11 @@ export default class IndicatorExampleExtension extends Extension {
             this._indicator = null;
         }
 
+        this._clipboardHistory = [];
+        this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
         this._settings = null;
         this._destroyOverlay();
         this.keyboard.destroy();
-        this._clipboardHistory = [];
-        this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
     }
 
     _enableKeybinding() {
