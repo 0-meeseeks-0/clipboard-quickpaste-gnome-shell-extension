@@ -1,6 +1,8 @@
 # clipboard-quickpaste-gnome-shell-extension
 Clipboard quick paste is a clipboard manager gnome-shell-extension that allows you to quickly paste previously copied text from a list of 50 stored items.
 
+![Demo](assets/demo.gif)
+
 ## Install
 Clone the repository to your preferred folder and run the 'make install' command.
 To activate the extension, you'll need to logout and login to your computer. This way, gnome shell will recognize the extension and you can use it.
