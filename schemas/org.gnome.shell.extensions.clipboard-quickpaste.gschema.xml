@@ -6,7 +6,7 @@
       <summary>Ctrl + Right Arrow keybinding</summary>
       <description>Global keybinding for quick-paste extension</description>
     </key>
-    <key name="clipboard-quickpaste-history" type="as">
+    <key name="clipboard-quickpaste-history" type="i">
       <default>[]</default>
       <summary>Persistent list</summary>
       <description>

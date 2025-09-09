@@ -29,18 +29,28 @@ const Indicator = GObject.registerClass(
             hbox.add_child(label);
 
             let entry = new St.Entry({
-                text: extension._MAX_ITEMS.toString(),
-                style_class: 'maxitem-entry',
+                text: extension._MAX_ITEMS.toString()
             });
 
             entry.clutter_text.connect('text-changed', () => {
                 let value = parseInt(entry.get_text());
                 if (!isNaN(value)) {
                     extension._MAX_ITEMS = value;
+                    extension._currentIndex = 0;
+                    extension._settings.set_int('clipboard-quickpaste-maxitems', value);
 
-                    if (extension._clipboardHistory.length > extension._MAX_ITEMS) {
-                        extension._clipboardHistory.splice(extension._MAX_ITEMS);
-                        extension._footer.text = `(${extension._currentIndex} - ${extension._MAX_ITEMS})`;
+                    if (extension._clipboardHistory.length > value)
+                        extension._clipboardHistory.splice(value);
+
+                    extension._settings.set_strv('clipboard-quickpaste-history', extension._clipboardHistory)
+
+                    if (extension._clipboardHistory.length > 0) {
+                        extension._label.text = extension._clipboardHistory[extension._currentIndex];
+                        extension._footer.text = `(${extension._currentIndex + 1} - ${value})`;
+                    }
+                    else {
+                        extension._label.text = 'no items';
+                        extension._footer.text = `(${extension._currentIndex} - ${value})`;
                     }
                 }
             });
@@ -58,32 +68,40 @@ const Indicator = GObject.registerClass(
                 Main.extensionManager.disableExtension(extension.uuid);
             });
             this.menu.addMenuItem(disableItem);
+
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+            let emptyHistory = new PopupMenu.PopupMenuItem(_('Empty history'));
+            emptyHistory.connect('activate', () => {
+                extension._clipboardHistory = [];
+                extension._settings.set_strv('clipboard-quickpaste-history', extension._clipboardHistory);
+                extension._currentIndex = 0;
+                extension._label.text = 'no items'
+                extension._footer.text = `(${extension._currentIndex} - ${extension._MAX_ITEMS})`;
+            });
+            this.menu.addMenuItem(emptyHistory);
         }
     });
 
 export default class IndicatorExampleExtension extends Extension {
     enable() {
+        this._settings = this.getSettings('org.gnome.shell.extensions.clipboard-quickpaste');
         this._selection = null;
         this._selectionOwnerChangedId = null;
         this._isMyCopy = false;
-        this._MAX_ITEMS = 50;
         this._clipboard = St.Clipboard.get_default();
-        this._contentPurpose = null;
-        this._setupListener();
-
-        this._settings = this.getSettings('org.gnome.shell.extensions.clipboard-quickpaste');
-
-        this._indicator = new Indicator(this);
-        Main.panel.addToStatusArea(this.uuid, this._indicator);
-
-        this._keybindingName = 'ctrl-right-arrow';
-        this._enableKeybinding();
-        
         this._clipboardHistory = this._settings.get_strv('clipboard-quickpaste-history');
+        this._MAX_ITEMS = this._settings.get_int('clipboard-quickpaste-maxitems');
         this._currentIndex = 0;
+
+        this._setupListener();
+        this._enableKeybinding();
         this._createOverlay();
 
         this.keyboard = new Keyboard();
+
+        this._indicator = new Indicator(this);
+        Main.panel.addToStatusArea(this.uuid, this._indicator);
     }
 
     disable() {
@@ -100,8 +118,6 @@ export default class IndicatorExampleExtension extends Extension {
             this._indicator = null;
         }
 
-        this._clipboardHistory = [];
-        this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
         this._settings = null;
         this._destroyOverlay();
         this.keyboard.destroy();
@@ -115,7 +131,7 @@ export default class IndicatorExampleExtension extends Extension {
             Shell.ActionMode : Shell.KeyBindingMode;
 
         Main.wm.addKeybinding(
-            this._keybindingName,
+            'ctrl-right-arrow',
             this._settings,
             Meta.KeyBindingFlags.NONE,
             ModeType.ALL,
@@ -129,7 +145,7 @@ export default class IndicatorExampleExtension extends Extension {
         if (!this._keybindingActive)
             return;
 
-        Main.wm.removeKeybinding(this._keybindingName);
+        Main.wm.removeKeybinding('ctrl-right-arrow');
         this._keybindingActive = false;
     }
 
@@ -181,10 +197,9 @@ export default class IndicatorExampleExtension extends Extension {
 
             this._currentIndex = 0;
             this._label.text = this._clipboardHistory[this._currentIndex];
-            this._footer.text = `(${this._currentIndex + 1} - 50)`;
+            this._footer.text = `(${this._currentIndex + 1} - ${this._MAX_ITEMS})`;
 
             this._settings.set_strv('clipboard-quickpaste-history', this._clipboardHistory);
-            this._clipboardHistory = this._settings.get_strv('clipboard-quickpaste-history');
         });
     }
 
@@ -206,7 +221,7 @@ export default class IndicatorExampleExtension extends Extension {
         this._overlay.add_child(this._header);
 
         this._label = new St.Label({
-            text: 'no item',
+            text: this._clipboardHistory.length > 0 ? this._clipboardHistory[this._currentIndex] : 'no items',
             style: 'background-color: rgba(50, 50, 50, 0.8); margin: 5px; padding: 5px; border-radius: 10px; color: white; font-size: 14px; text-align: center;',
             x_align: Clutter.ActorAlign.FILL,
             y_expand: true,
@@ -221,7 +236,7 @@ export default class IndicatorExampleExtension extends Extension {
 
         // Footer
         this._footer = new St.Label({
-            text: '(0 - 50)',
+            text: `(${this._currentIndex + 1} - ${this._MAX_ITEMS})`,
             style: 'background-color: rgba(50, 50, 50, 0.8); margin: 5px; padding: 5px; border-radius: 10px; color: white; font-weight: bold; font-size: 16px; text-align: center;',
             x_align: Clutter.ActorAlign.CENTER,
             y_align: Clutter.ActorAlign.CENTER
