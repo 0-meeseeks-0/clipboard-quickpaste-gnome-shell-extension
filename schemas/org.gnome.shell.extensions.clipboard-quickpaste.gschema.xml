@@ -6,11 +6,18 @@
       <summary>Ctrl + Right Arrow keybinding</summary>
       <description>Global keybinding for quick-paste extension</description>
     </key>
-    <key name="clipboard-quickpaste-history" type="i">
+    <key name="clipboard-quickpaste-history" type="as">
       <default>[]</default>
       <summary>Persistent list</summary>
       <description>
         Array of strings (each string is clipboard content).
+      </description>
+    </key>
+    <key name="clipboard-quickpaste-maxitems" type="i">
+      <default>50</default>
+      <summary>max items</summary>
+      <description>
+        Number of max items in clipboard.
       </description>
     </key>
   </schema>
