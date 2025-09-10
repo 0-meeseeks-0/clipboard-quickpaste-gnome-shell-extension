@@ -265,7 +265,7 @@ export default class IndicatorExampleExtension extends Extension {
         this._keyReleaseHandler = this._overlay.connect('key-release-event', (actor, event) => {
             const symbol = event.get_key_symbol();
 
-            if ((symbol === Clutter.KEY_Control_L)) {
+            if ((symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R)) {
                 this._enableKeybinding();
                 this._overlay.hide();
 
