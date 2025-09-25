@@ -150,6 +150,7 @@ export default class IndicatorExampleExtension extends Extension {
     }
 
     _onKeybindingActivated() {
+        this._findMonitorOnFocus();
         this._overlay.show();
         this._overlay.grab_key_focus();
         this._disableKeybinding();
@@ -246,11 +247,7 @@ export default class IndicatorExampleExtension extends Extension {
 
         Main.layoutManager.addChrome(this._overlay);
 
-        const monitor = Main.layoutManager.primaryMonitor;
-        this._overlay.set_position(
-            Math.floor(monitor.width / 2 - this._overlay.width / 2),
-            Math.floor(monitor.height / 2 - this._overlay.height / 2)
-        );
+        this._findMonitorOnFocus();
 
         this._keyPressHandler = this._overlay.connect('key-press-event', (actor, event) => {
             const symbol = event.get_key_symbol();
@@ -298,6 +295,23 @@ export default class IndicatorExampleExtension extends Extension {
             this.keyboard.release(Clutter.KEY_Insert);
             this.keyboard.release(Clutter.KEY_Shift_L);
         }
+    }
+
+    _findMonitorOnFocus() {
+        let focusedWindow = global.display.get_focus_window();
+        let monitorIndex;
+
+        if (focusedWindow)
+            monitorIndex = focusedWindow.get_monitor();
+        else
+            monitorIndex = Main.layoutManager.primaryMonitor.index;
+
+        let monitor = Main.layoutManager.monitors[monitorIndex];
+
+        this._overlay.set_position(
+            Math.floor(monitor.x + monitor.width / 2 - this._overlay.width / 2),
+            Math.floor(monitor.y + monitor.height / 2 - this._overlay.height / 2)
+        );
     }
 
     _destroyOverlay() {
